@@ -1,111 +1,69 @@
-public class Conta {
+import java.util.regex.Pattern;
 
-    private int numero;
+public class Cliente {
+    String nome;
+    String cpf;
+    String endereco;
+    int idade;
+    char sexo;
 
-    private Cliente dono;
+    // Método estático para validar CPF
+    private static boolean validarCPF(String cpf) {
+        cpf = cpf.replaceAll("[^0-9]", "");
 
-    private double saldo;
+        // Verifica se o CPF tem 11 dígitos
+        if (cpf.length() != 11)
+            return false;
 
-    private double limite;
-
-    private Operacao[] operacoes;
-
-    private int proximaOperacao;
-
-    private static int totalContas = 0;
-
-    public Conta(int numero, Cliente dono, double saldo, double limite) {
-        this.numero = numero;
-        this.dono = dono;
-        this.saldo = saldo;
-        this.limite = limite;
-
-        this.operacoes = new Operacao[10];
-        this.proximaOperacao = 0;
-
-        Conta.totalContas++;
-    }
-
-
-
-    public boolean sacar(double valor) {
-        if (valor >= 0 && valor <= this.limite) {
-            this.saldo -= valor;
-
-            this.operacoes[proximaOperacao] = new Operacao('s', valor);
-            this.proximaOperacao++;
-            return true;
-        }
-
-        return false;
-    }
-
-    public void depositar(double valor) {
-        this.saldo += valor;
-
-        this.operacoes[proximaOperacao] = new Operacao('d', valor);
-        this.proximaOperacao++;
-    }
-
-    public boolean transferir(Conta destino, double valor) {
-        boolean valorSacado = this.sacar(valor);
-        if (valorSacado) {
-            destino.depositar(valor);
-            return true;
-        }
-        return false;
-    }
-
-    public void imprimir() {
-        System.out.println("===== Conta " + this.numero + " =====");
-        System.out.println("Dono: " + this.dono.nome);
-        System.out.println("Saldo: " + this.saldo);
-        System.out.println("Limite: " + this.limite);
-        System.out.println("====================");
-    }
-
-    public void imprimirExtrato() {
-        System.out.println("======= Extrato Conta " + this.numero + "======");
-        for(Operacao atual : this.operacoes) {
-            if (atual != null) {
-                atual.imprimir();
+        // Verifica se todos os dígitos são iguais
+        boolean allDigitsEqual = true;
+        for (int i = 1; i < cpf.length(); i++) {
+            if (cpf.charAt(i) != cpf.charAt(0)) {
+                allDigitsEqual = false;
+                break;
             }
         }
-        System.out.println("====================");
+        if (allDigitsEqual)
+            return false;
+
+        // Calcula o primeiro dígito verificador
+        int sum = 0;
+        for (int i = 0; i < 9; i++) {
+            sum += (cpf.charAt(i) - '0') * (10 - i);
+        }
+        int digit1 = 11 - (sum % 11);
+        if (digit1 > 9)
+            digit1 = 0;
+
+        // Verifica o primeiro dígito verificador
+        if ((cpf.charAt(9) - '0') != digit1)
+            return false;
+
+        // Calcula o segundo dígito verificador
+        sum = 0;
+        for (int i = 0; i < 10; i++) {
+            sum += (cpf.charAt(i) - '0') * (11 - i);
+        }
+        int digit2 = 11 - (sum % 11);
+        if (digit2 > 9)
+            digit2 = 0;
+
+        // Verifica o segundo dígito verificador
+        return (cpf.charAt(10) - '0') == digit2;
     }
 
-    public int getNumero() {
-        return numero;
-    }
-
-    public Cliente getDono() {
-        return dono;
-    }
-
-    public double getSaldo() {
-        return saldo;
-    }
-
-    public double getLimite() {
-        return limite;
-    }
-
-    public static int getTotalContas() {
-        return Conta.totalContas;
-    }
-
-    public void setNumero(int numero) {
-        this.numero = numero;
-    }
-
-    public void setDono(Cliente dono) {
-        this.dono = dono;
-    }
-
-    public void setLimite(double limite) {
-        if (limite < 0)
-            limite = 0;
-
-        this.limite = limite;
+    // Método estático para criar cliente se o CPF for válido
+    public static Cliente criarCliente(String nome, String cpf, String endereco, int idade, char sexo) {
+        if (validarCPF(cpf)) {
+            Cliente cliente = new Cliente();
+            cliente.nome = nome;
+            cliente.cpf = cpf;
+            cliente.endereco = endereco;
+            cliente.idade = idade;
+            cliente.sexo = sexo;
+            return cliente;
+        } else {
+            return null;
+        }
     }
 }

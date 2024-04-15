@@ -1,73 +1,66 @@
-/**
- * Operacao.java
- *
- * @author João Eduardo Montandon
- */
 
-import java.util.Date;
+public class Conta {
 
-/**
- * Classe responsável por registrar operações de saque e depósitos realizados em contas correntes.
- */
-public class Operacao {
+    private int numero;
+    private Cliente dono;
+    private double saldo;
+    private double limite;
+    private Operacao[] operacoes;
+    private int proximaOperacao;
+    private static int totalContas = 0;
 
-    /* Data de realização da operação */
-    private Date data;
+    public Conta(int numero, Cliente dono, double saldo, double limite) {
+        this.numero = numero;
+        this.dono = dono;
+        this.saldo = saldo;
+        this.limite = limite;
 
-    /* Tipo da operação */
-    private char tipo;
+        this.operacoes = new Operacao[10]; // Inicialmente, o array tem tamanho 10
+        this.proximaOperacao = 0;
 
-    /* Valor da operação */
-    private double valor;
-
-    private static int totalOperacoes = 0;
-
-    /**
-     * Construtor. Inicializa uma nova instância da classe Operacao onde a data da operação é exatamente a data
-     * da criação da classe.
-     *
-     * Exemplos de uso:
-     *
-     * > Operacao op1 = new Operacao('d', 2500); // Operação de depósito de 2500 reais
-     * > Operacao op2 = new Operacao('s', 1000); // Operação de saque de 1000 reais
-     *
-     * @param tipo Tipo da operação, podendo ser 'd' ou 's'
-     * @param valor Valor da operação
-     */
-    public Operacao(char tipo, double valor) {
-        this.tipo = tipo;
-        this.valor = valor;
-        data = new Date();
-
-        Operacao.totalOperacoes++;
+        Conta.totalContas++;
     }
 
-    void imprimir() {
-        System.out.printf("%s\t%s\t%s\n", this.data, this.tipo, this.valor);
+    // Outros métodos da classe...
+
+    private void _redimensionarOperacoes() {
+        int novoTamanho = this.operacoes.length * 2; // Dobra o tamanho do array
+        Operacao[] novoArray = new Operacao[novoTamanho];
+
+        // Copia as operações antigas para o novo array
+        for (int i = 0; i < this.operacoes.length; i++) {
+            novoArray[i] = this.operacoes[i];
+        }
+
+        this.operacoes = novoArray; // Atualiza a referência para o novo array
     }
 
-    public Date getData() {
-        return data;
+    public boolean sacar(double valor) {
+        if (valor >= 0 && valor <= this.limite) {
+            this.saldo -= valor;
+
+            if (this.proximaOperacao == this.operacoes.length) {
+                this._redimensionarOperacoes(); // Redimensiona o array se estiver cheio
+            }
+
+            this.operacoes[this.proximaOperacao] = new Operacao('s', valor);
+            this.proximaOperacao++;
+            return true;
+        }
+        return false;
     }
 
-    public char getTipo() {
-        return tipo;
+    public void depositar(double valor) {
+        this.saldo += valor;
+
+        if (this.proximaOperacao == this.operacoes.length) {
+            this._redimensionarOperacoes(); // Redimensiona o array se estiver cheio
+        }
+
+        this.operacoes[this.proximaOperacao] = new Operacao('d', valor);
+        this.proximaOperacao++;
     }
 
-    public double getValor() {
-        return valor;
-    }
-
-    public static int getTotalOperacoes() {
-        return Operacao.totalOperacoes;
-    }
-
-    public void setTipo(char tipo) {
-        if(tipo == 'd' || tipo == 's')
-            this.tipo = tipo;
-    }
-
-    public void setValor(double valor) {
-        this.valor = valor;
-    }
 }
+
+
